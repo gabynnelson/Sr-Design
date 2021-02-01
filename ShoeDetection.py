@@ -80,18 +80,42 @@ def Canny_detector(img, weak_th=None, strong_th=None): #Modified Canny operator
 
     return mag # finally returning the magnitude of gradients of edges
 
-#Main program
-frame = cv2.imread('food.jpeg') #Loading video
+#Main program (working code)
 
-x,y,h,w=100 #Cropping frame of track video
-"""
-These are just dummy variables to hold the dimensions
-how do we know the dimensions which are exact to focus on the track 
-& what is the margin of error?
-"""
-frame = frame[y:y+h, x:x+w]
+# Creating a VideoCapture object to read the video
+cap = cv2.VideoCapture('trial_10.mp4')
 
-canny_img = Canny_detector(frame) #Applying modified canny operator for edge traversal
-canny_img = cv2.INTER_LINEAR(canny_img) #Interpolating to close edges 
+# Loop until the end of the video
+while (cap.isOpened()):
+
+    # Capture frame-by-frame
+    ret, frame = cap.read()
+
+    #crop frame to only see feet and markers
+    cropped_frame = frame[260:440,0:2704]
+
+    # Display the resulting frame
+    cropped_frame = cv2.resize(cropped_frame, (540, 380), fx=0, fy=0,
+                       interpolation=cv2.INTER_CUBIC)
+    cv2.imshow('Frame', cropped_frame)
+
+    edge_detect = cv2.Canny(cropped_frame, 100, 200)
+    cv2.imshow('Edge detect', edge_detect)
+
+    # find contours in the edge map
+    cnts = cv2.findContours(edge_detect.copy(), cv2.RETR_EXTERNAL,
+                            cv2.CHAIN_APPROX_SIMPLE)
+    cnts = imutils.grab_contours(cnts)
+
+     #define q as the exit button
+    if cv2.waitKey(25) & 0xFF == ord('q'):
+        break
+
+# release the video capture object
+cap.release()
+# Closes all the windows currently opened.
+cv2.destroyAllWindows()
+
+
 
 
